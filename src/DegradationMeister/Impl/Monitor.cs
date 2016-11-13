@@ -5,9 +5,17 @@ namespace DegradationMeister.Impl
 {
     public class Monitor : IMonitor
     {
+        /// <summary>
+        /// Gets or sets the degrader being invoked in case of an update
+        /// </summary>
         public IDegrader Degrader { get; set; }
 
-        public void InvokeFailure(IFailure failure, MonitoringResult result)
+        public Monitor(IDegrader degrader)
+        {
+            Degrader = degrader;
+        }
+
+        protected void ReportFailureStatus(IFailure failure, MonitoringResult result)
         {
             if (Degrader == null)
             {

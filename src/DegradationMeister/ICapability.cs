@@ -7,6 +7,6 @@
         /// </summary>
         IDegrader Degrader { get; set; }
 
-       int CurrentValue { get; set; }
+        int CurrentValue { get; set; }
     }
 }

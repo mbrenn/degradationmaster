@@ -8,9 +8,11 @@ namespace DegradationMeister.Impl
 {
     public class CapabilityRuleSet
     {
-        public ICapability TargetCapability { get; set; }
+        public ICapability Capability { get; set; }
 
         public List<Rule> Rules { get; } = new List<Rule>();
+
+        public List<Action<ICapability>> Triggers { get; } = new List<Action<ICapability>>();
 
         public class Rule
         {
@@ -20,7 +22,6 @@ namespace DegradationMeister.Impl
         {
             public IFailure Failure { get; set; }
             public MonitoringResult Value { get; set; }
-            
         }
 
         public class CapabilityRule : Rule

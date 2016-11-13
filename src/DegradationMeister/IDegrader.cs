@@ -8,9 +8,9 @@ namespace DegradationMeister
 {
     public interface IDegrader
     {
-        void UpdateMonitoringResult(IFailure failure, MonitoringResult monitor);
+        void UpdateMonitoringResult(IFailure failure, MonitoringResult monitoringResult);
 
-        int GetCapability(ICapability capability);
+        void UpdateDegradation(ICapability capability);
 
         void AddRule(ICapability sourceCapability, int sourceValue, ICapability targetCapability, int targetValue);
 

@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Capabilities.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="IFailure.cs" />
     <Compile Include="ICapability.cs" />
     <Compile Include="IDegrader.cs" />

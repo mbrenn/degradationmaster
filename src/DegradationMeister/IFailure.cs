@@ -1,6 +1,4 @@
-﻿using System.Security.Policy;
-
-namespace DegradationMeister
+﻿namespace DegradationMeister
 {
     public interface IFailure
     {
