@@ -5,9 +5,9 @@ namespace DegradationMeisterTest
 {
     public class PowerSupplyMonitor : Monitor
     {
-        public IFailure TotalFailure { get; } = new Failure();
+        public IFailure TotalFailure { get; } = new Failure("TotalFailure");
 
-        public IFailure LimitedCurrent { get; } = new Failure();
+        public IFailure LimitedCurrent { get; } = new Failure("LimitedCurrent");
         
         public PowerSupplyMonitor(IDegrader degrader) : base(degrader)
         {

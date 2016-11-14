@@ -10,7 +10,12 @@ namespace DegradationMeister
     {
         void UpdateMonitoringResult(IFailure failure, MonitoringResult monitoringResult);
 
-        void UpdateDegradation(ICapability capability);
+        /// <summary>
+        /// Updates the degradation for the given capability
+        /// </summary>
+        /// <param name="capability">Capability which shall be upgraded</param>
+        /// <param name="alreadyDegraded">Enumeration of the capabilities which were upgraded</param>
+        void UpdateDegradation(ICapability capability, HashSet<ICapability> alreadyDegraded);
 
         void AddRule(ICapability sourceCapability, int sourceValue, ICapability targetCapability, int targetValue);
 

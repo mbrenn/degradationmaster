@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DegradationMeister.Impl
 {
@@ -14,20 +11,52 @@ namespace DegradationMeister.Impl
 
         public List<Action<ICapability>> Triggers { get; } = new List<Action<ICapability>>();
 
-        public class Rule
+        public List<ICapability> DependentCapabilities { get; } = new List<ICapability>();
+
+        /// <summary>
+        /// Adds the information that the given capability is dependent on the this capability. 
+        /// This means that if the this capability is updated, the dependent capabilities also have to be updated
+        /// </summary>
+        /// <param name="capability">Capability which needs to be updated in case of an update of this capability</param>
+        public void AddDependent(ICapability capability)
         {
-            public int TargetCapability { get; set; }
-        }
-        public class FailureRule : Rule
-        {
-            public IFailure Failure { get; set; }
-            public MonitoringResult Value { get; set; }
+            if (!DependentCapabilities.Contains(capability))
+            {
+                DependentCapabilities.Add(capability);
+            }
         }
 
-        public class CapabilityRule : Rule
+        public override string ToString()
         {
-            public ICapability Capability { get; set; }
-            public int Value { get; set; }
+            return $"Ruleset for {Capability}";
+        }
+    }
+
+
+    public class Rule
+    {
+        public int TargetCapability { get; set; }
+    }
+
+    public class CapabilityRule : Rule
+    {
+        public ICapability Capability { get; set; }
+        public int Value { get; set; }
+
+        public override string ToString()
+        {
+            return $"Depending on {Capability}";
+        }
+    }
+
+    public class FailureRule : Rule
+    {
+        public IFailure Failure { get; set; }
+        public MonitoringResult Value { get; set; }
+
+        public override string ToString()
+        {
+            return $"Depending on {Failure}";
         }
     }
 }

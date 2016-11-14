@@ -14,7 +14,7 @@ namespace DegradationMeisterTest
         {
         }
 
-        public IFailure TotalFailure { get; set; } = new Failure();
+        public IFailure TotalFailure { get; set; } = new Failure("TotalFailure");
 
         public void InjectTotalFailure()
         {
