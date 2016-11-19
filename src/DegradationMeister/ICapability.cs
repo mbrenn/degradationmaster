@@ -5,7 +5,7 @@
         /// <summary>
         /// Gets or sets the information about the degrader being connected to the capability
         /// </summary>
-        IDegrader Degrader { get; set; }
+        IDegrader Degrader { get; }
 
         /// <summary>
         /// Gets or sets current Degradation of the capability

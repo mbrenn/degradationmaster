@@ -3,6 +3,39 @@
     public static class Extensions
     {
         /// <summary>
+        /// Adds a default rule to set the target capability to Failed or Unknown depending on the source capability. 
+        /// If additional relationships need to be established, further explicit calls are necessary
+        /// </summary>
+        /// <param name="degrader">Degrader to be used for the rule</param>
+        /// <param name="sourceCapability">The capability whose change will have an effect on the <c>targetCapability</c></param>
+        /// <param name="targetCapability">The targetcapability being used</param>
+        public static void AddDefaultRules(
+            this IDegrader degrader,
+            ICapability sourceCapability,
+            ICapability targetCapability)
+        {
+            AddRuleForFailure(degrader, sourceCapability, targetCapability);
+            AddRuleForUnknown(degrader, sourceCapability, targetCapability);
+        }
+
+        /// <summary>
+        /// Adds a default rule to set the target capability to Failed or Unknown depending on the failure. 
+        /// NOK will be mapped to Failed, Unknown will be mapped to Unknown
+        /// If additional relationships need to be established, further explicit calls are necessary
+        /// </summary>
+        /// <param name="degrader">Degrader to be used for the rule</param>
+        /// <param name="failure">The falilue whose change will have an effect on the <c>targetCapability</c></param>
+        /// <param name="targetCapability">The targetcapability being used</param>
+        public static void AddDefaultRules(
+            this IDegrader degrader,
+            IFailure failure,
+            ICapability targetCapability)
+        {
+            AddRuleForFailure(degrader, failure, targetCapability);
+            AddRuleForUnknown(degrader, failure, targetCapability);
+        }
+
+        /// <summary>
         /// Adds a rule, that the target Capability shall be Failed in case of a degraded source Capability
         /// </summary>
         /// <param name="degrader">Degrader being used to add the rule</param>

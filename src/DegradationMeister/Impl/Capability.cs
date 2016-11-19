@@ -4,12 +4,13 @@
     {
         private readonly string _name;
 
-        public Capability(string name)
+        public Capability(Degrader degrader, string name = "")
         {
             _name = name;
+            Degrader = degrader;
         }
 
-        public IDegrader Degrader { get; set; }
+        public IDegrader Degrader { get; }
 
         public int CurrentDegradation { get; set; } = 0;
 

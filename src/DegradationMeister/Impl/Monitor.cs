@@ -14,7 +14,12 @@ namespace DegradationMeister.Impl
             Degrader = degrader;
         }
 
-        protected void ReportFailureStatus(IFailure failure, MonitoringResult result)
+        /// <summary>
+        /// This method can be called by the inherited methods which define a specific failure
+        /// </summary>
+        /// <param name="failure">Failure, whose status shall be updated</param>
+        /// <param name="result">The monitoring result of the failure</param>
+        protected void ReportMonitoringResult(IFailure failure, MonitoringResult result)
         {
             if (Degrader == null)
             {

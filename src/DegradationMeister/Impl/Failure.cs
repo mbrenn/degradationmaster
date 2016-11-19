@@ -10,7 +10,7 @@
         /// </summary>
         private readonly string _name;
 
-        public Failure(string name)
+        public Failure(string name = "")
         {
             _name = name;
         }

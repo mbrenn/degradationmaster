@@ -15,19 +15,19 @@ namespace DegradationMeisterTest
 
         public void InjectTotalFailure()
         {
-            ReportFailureStatus(TotalFailure, MonitoringResult.NOK);
+            ReportMonitoringResult(TotalFailure, MonitoringResult.NOK);
         }
 
         public void InjectLimitedCurrentFailure()
         {
-            ReportFailureStatus(LimitedCurrent, MonitoringResult.NOK);
+            ReportMonitoringResult(LimitedCurrent, MonitoringResult.NOK);
 
         }
 
         public void MakeOk()
         {
-            ReportFailureStatus(TotalFailure, MonitoringResult.OK);
-            ReportFailureStatus(LimitedCurrent, MonitoringResult.OK);
+            ReportMonitoringResult(TotalFailure, MonitoringResult.OK);
+            ReportMonitoringResult(LimitedCurrent, MonitoringResult.OK);
         }
     }
 }

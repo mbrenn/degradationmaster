@@ -23,7 +23,7 @@ namespace DegradationMeister.Impl
 
         private readonly List<CapabilityRuleSet> _rules = new List<CapabilityRuleSet>();
 
-        public Degrader(string name)
+        public Degrader(string name = "")
         {
             _name = name;
         }
@@ -193,8 +193,6 @@ namespace DegradationMeister.Impl
                 throw new InvalidOperationException("Target Capability is already assigned to another degrader");
             }
 
-            targetCapability.Degrader = this;
-
             var ruleSet = GetRuleSetFor(targetCapability, true);
             if (ruleSet == null) throw new ArgumentNullException(nameof(ruleSet));
             ruleSet.Rules.Add(
@@ -216,8 +214,6 @@ namespace DegradationMeister.Impl
             {
                 throw new InvalidOperationException("Target Capability is already assigned to another degrader");
             }
-
-            targetCapability.Degrader = this;
 
             var ruleSet = GetRuleSetFor(targetCapability, true);
             if (ruleSet == null) throw new ArgumentNullException(nameof(ruleSet));

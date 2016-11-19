@@ -23,24 +23,25 @@ namespace DegradationMeisterTest
         {
             var degraderPowerSupply = new Degrader("Power Supply");
             var monitorPowerSupply = new PowerSupplyMonitor(degraderPowerSupply);
-            _capabilityPowerSupply = new Capability("Power Supply");
+            _capabilityPowerSupply = new Capability(degraderPowerSupply, "Power Supply");
 
             var degraderActuator = new Degrader("Actuator");
             var monitorActuator = new ActuatorMonitor(degraderActuator);
-            _capabilityActuator = new Capability("Actuator");
+            _capabilityActuator = new Capability(degraderActuator, "Actuator");
 
             var degraderSystem = new Degrader("System");
-            _capabilitySystem = new Capability("System");
+            _capabilitySystem = new Capability(degraderSystem, "System");
 
-            degraderPowerSupply.AddRuleForUnknown(monitorPowerSupply.TotalFailure, _capabilityPowerSupply);
+            degraderPowerSupply.AddDefaultRules(monitorPowerSupply.TotalFailure, _capabilityPowerSupply);
             degraderPowerSupply.AddRuleForUnknown(monitorPowerSupply.LimitedCurrent, _capabilityPowerSupply);
-            degraderPowerSupply.AddRuleForFailure(monitorPowerSupply.TotalFailure, _capabilityPowerSupply);
-            degraderPowerSupply.AddRule(monitorPowerSupply.LimitedCurrent, MonitoringResult.NOK, _capabilityPowerSupply,
+            degraderPowerSupply.AddRule(monitorPowerSupply.LimitedCurrent, 
+                MonitoringResult.NOK, 
+                _capabilityPowerSupply,
                 Capabilities.Limited);
 
-            degraderActuator.AddRuleForUnknown(monitorActuator.TotalFailure, _capabilityActuator);
-            degraderActuator.AddRuleForFailure(monitorActuator.TotalFailure, _capabilityActuator);
-            degraderActuator.AddRuleForFailure(_capabilityPowerSupply, _capabilityActuator);
+
+            degraderActuator.AddDefaultRules(monitorActuator.TotalFailure, _capabilityActuator);
+            degraderActuator.AddDefaultRules(_capabilityPowerSupply, _capabilityActuator);
             degraderActuator.AddRule(_capabilityPowerSupply, Capabilities.Limited, _capabilityActuator,
                 Capabilities.Limited);
 
@@ -101,13 +102,13 @@ namespace DegradationMeisterTest
         { 
             // Creates complex Degrading and capability hierarchy
             var degrader = new Degrader("Test");
-            var capability = new Capability("Test");
+            var capability = new Capability(degrader, "Test");
 
             var failure = CreateSup(degrader, capability, 0);
 
             var watch = new Stopwatch();
             watch.Start();
-            for (var m = 0; m < 1000; m++)
+            for (var m = 0; m < 2000; m++)
             {
                 failure.InjectTotalFailure();
                 Assert.That(capability.CurrentDegradation, Is.EqualTo(Capabilities.Failed));
@@ -127,18 +128,22 @@ namespace DegradationMeisterTest
             for (var n = 0; n < 5; n++)
             {
                 var subDegrader = new Degrader("Sub");
-                var subCapability = new Capability("Sub");
+                var subCapability = new Capability(subDegrader, "Sub");
 
                 var failure = new ActuatorMonitor(subDegrader);
-                subDegrader.AddRuleForFailure(failure.TotalFailure, subCapability);
-                degrader.AddRuleForFailure(subCapability, capability);
+                subDegrader.AddDefaultRules(failure.TotalFailure, subCapability);
+                degrader.AddDefaultRules(subCapability, capability);
 
-                if (i < 1000)
+                if (i < 5)
                 {
-                    return CreateSup(subDegrader, subCapability, i+1);
+                    last = CreateSup(subDegrader, subCapability, i + 1);
+                }
+                else
+                {
+                    last = failure;
                 }
 
-                last = failure;
+                failure.MakeOk();
             }
 
             return last;
