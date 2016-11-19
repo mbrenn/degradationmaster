@@ -21,7 +21,7 @@ namespace DegradationMeister.Impl
         private readonly Dictionary<IFailure, MonitoringResult> _failureStatus = 
             new Dictionary<IFailure, MonitoringResult>();
 
-        private readonly List<CapabilityRuleSet> _rules = new List<CapabilityRuleSet>();
+        private readonly Dictionary<ICapability, CapabilityRuleSet> _rules = new Dictionary<ICapability, CapabilityRuleSet>();
 
         public Degrader(string name = "")
         {
@@ -37,11 +37,11 @@ namespace DegradationMeister.Impl
         /// <returns>The found capability set</returns>
         private CapabilityRuleSet GetRuleSetFor(ICapability targetCapability, bool createIfNotExisting)
         {
-            CheckThatInDegrader(targetCapability); 
+            CheckThatInDegrader(targetCapability);
 
-            var result = _rules.FirstOrDefault(x => x.Capability == targetCapability);
-            if (result == null)
-            {
+            CapabilityRuleSet result;
+            if ( !_rules.TryGetValue(targetCapability, out result))
+            { 
                 if (!createIfNotExisting)
                 {
                     throw new InvalidOperationException("Given capability does not exist");
@@ -52,7 +52,7 @@ namespace DegradationMeister.Impl
                     Capability = targetCapability
                 };
 
-                _rules.Add(result);
+                _rules[targetCapability] = result;
             }
 
             return result;
@@ -78,10 +78,12 @@ namespace DegradationMeister.Impl
 
             _failureStatus[failure] = monitoringResult;
 
-            // Go through all rulesets where the failure is allocated
+            // Go through all rulesets where the capability is dependent on the failure
             var alreadyUpdated = new HashSet<ICapability>();
-            foreach (var ruleSet in _rules)
+            foreach (var ruleSet in _rules.Values)
             {
+                UpdateDegradation(ruleSet.Capability, alreadyUpdated);
+                /*
                 foreach (var rule in ruleSet.Rules
                     .OfType<FailureRule>()
                     .Where(x=> x.Failure.Equals(failure)))
@@ -90,7 +92,7 @@ namespace DegradationMeister.Impl
                     {
                         UpdateDegradation(ruleSet.Capability, alreadyUpdated);
                     }
-                }
+                }*/
             }
         }
 
@@ -126,7 +128,7 @@ namespace DegradationMeister.Impl
                     }
 
                     // Checks, if the failure status matches to the capability
-                    if (ruleAsFailureRule.Value == result)
+                    if (ruleAsFailureRule.ConditionValue == result)
                     {
                         ChangeCapabilityTo(ruleSet, rule.TargetCapability, alreadyUpdated);
                         return; // First match is success
@@ -139,7 +141,7 @@ namespace DegradationMeister.Impl
                 if (ruleAsCapability != null)
                 {
                     // Checks if the capability matches to the current value
-                    if (ruleAsCapability.Value == ruleAsCapability.Capability.CurrentDegradation)
+                    if (ruleAsCapability.ConditionValue == ruleAsCapability.Capability.Current)
                     {
                         ChangeCapabilityTo(ruleSet, rule.TargetCapability, alreadyUpdated);
                         return;
@@ -162,10 +164,10 @@ namespace DegradationMeister.Impl
             int targetCapability,
             HashSet<ICapability> alreadyUpdated)
         {
-            var current = ruleSet.Capability.CurrentDegradation;
+            var current = ruleSet.Capability.Current;
             if (current != targetCapability)
             {
-                ruleSet.Capability.CurrentDegradation = targetCapability;
+                ruleSet.Capability.Current = targetCapability;
 
                 foreach (var dependent in ruleSet.DependentCapabilities)
                 {
@@ -199,7 +201,7 @@ namespace DegradationMeister.Impl
                 new CapabilityRule
                 {
                     Capability = sourceCapability,
-                    Value =  sourceValue,
+                    ConditionValue =  sourceValue,
                     TargetCapability = targetValue
                 });
 
@@ -221,7 +223,7 @@ namespace DegradationMeister.Impl
                 new FailureRule
                 {
                     Failure = failure,
-                    Value = monitoringResult,
+                    ConditionValue = monitoringResult,
                     TargetCapability = targetValue
                 });
         }

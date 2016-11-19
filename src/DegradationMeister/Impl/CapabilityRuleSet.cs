@@ -41,7 +41,7 @@ namespace DegradationMeister.Impl
     public class CapabilityRule : Rule
     {
         public ICapability Capability { get; set; }
-        public int Value { get; set; }
+        public int ConditionValue { get; set; }
 
         public override string ToString()
         {
@@ -52,7 +52,7 @@ namespace DegradationMeister.Impl
     public class FailureRule : Rule
     {
         public IFailure Failure { get; set; }
-        public MonitoringResult Value { get; set; }
+        public MonitoringResult ConditionValue { get; set; }
 
         public override string ToString()
         {

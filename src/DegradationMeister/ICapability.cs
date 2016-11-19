@@ -10,6 +10,6 @@
         /// <summary>
         /// Gets or sets current Degradation of the capability
         /// </summary>
-        int CurrentDegradation { get; set; }
+        int Current { get; set; }
     }
 }

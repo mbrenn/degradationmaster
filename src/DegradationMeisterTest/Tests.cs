@@ -49,7 +49,7 @@ namespace DegradationMeisterTest
             degraderSystem.AddRule(_capabilityActuator, Capabilities.Limited, _capabilitySystem, Capabilities.Limited);
 
             degraderSystem.AddTrigger(_capabilitySystem,
-                x => Console.WriteLine($"- System: {Capabilities.Convert(x.CurrentDegradation)}"));
+                x => Console.WriteLine($"- System: {Capabilities.Convert(x.Current)}"));
 
             GiveStatus();
             Console.WriteLine("Pass Power Supply...");
@@ -111,10 +111,10 @@ namespace DegradationMeisterTest
             for (var m = 0; m < 2000; m++)
             {
                 failure.InjectTotalFailure();
-                Assert.That(capability.CurrentDegradation, Is.EqualTo(Capabilities.Failed));
+                Assert.That(capability.Current, Is.EqualTo(Capabilities.Failed));
 
                 failure.MakeOk();
-                Assert.That(capability.CurrentDegradation, Is.EqualTo(Capabilities.Full));
+                Assert.That(capability.Current, Is.EqualTo(Capabilities.Full));
             }
 
             watch.Stop();
@@ -152,9 +152,9 @@ namespace DegradationMeisterTest
         private static void GiveStatus()
         {
             Console.WriteLine(
-                $" - Power Supply: {Capabilities.Convert(_capabilityPowerSupply.CurrentDegradation)} - " +
-                $"Actuator: {Capabilities.Convert(_capabilityActuator.CurrentDegradation)} - " + 
-                $"System: {Capabilities.Convert(_capabilitySystem.CurrentDegradation)}");
+                $" - Power Supply: {Capabilities.Convert(_capabilityPowerSupply.Current)} - " +
+                $"Actuator: {Capabilities.Convert(_capabilityActuator.Current)} - " + 
+                $"System: {Capabilities.Convert(_capabilitySystem.Current)}");
         }
     }
 }
