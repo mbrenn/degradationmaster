@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DegradationMeister.Impl
@@ -26,16 +27,6 @@ namespace DegradationMeister.Impl
         {
             _name = name;
         }
-
-        private void CheckThatInDegrader(ICapability targetCapability)
-        {
-            if (targetCapability.Degrader != this)
-            {
-                throw new InvalidOperationException(
-                    $"Given capability {targetCapability} does not match to Degrader {this}");
-            }
-        }
-
 
         /// <summary>
         /// Gets the ruleset for a certain capability. If the ruleset does not exist before, 
@@ -157,11 +148,11 @@ namespace DegradationMeister.Impl
             }
 
             // If no rule matches, capability is assumed as OK
-            ChangeCapabilityTo(ruleSet, Capabilities.Passed, alreadyUpdated);
+            ChangeCapabilityTo(ruleSet, Capabilities.Full, alreadyUpdated);
         }
 
         /// <summary>
-        /// Changes the value of the capabiltiy to the given value
+        /// Changes the value of the capabiltiy to the given value and informs all dependent degraders about the change
         /// </summary>
         /// <param name="ruleSet">Ruleset of the capability containing also the triggers</param>
         /// <param name="targetCapability">The target capability value</param>
@@ -207,7 +198,7 @@ namespace DegradationMeister.Impl
             var ruleSet = GetRuleSetFor(targetCapability, true);
             if (ruleSet == null) throw new ArgumentNullException(nameof(ruleSet));
             ruleSet.Rules.Add(
-                new CapabilityRule()
+                new CapabilityRule
                 {
                     Capability = sourceCapability,
                     Value =  sourceValue,
@@ -218,6 +209,7 @@ namespace DegradationMeister.Impl
             sourceCapability.Degrader.AddDependency(sourceCapability, targetCapability);
         }
 
+        /// <inheritdoc />
         public void AddRule(IFailure failure, MonitoringResult monitoringResult, ICapability targetCapability, int targetValue)
         {
             if (targetCapability.Degrader != null && targetCapability.Degrader != this)
@@ -230,7 +222,7 @@ namespace DegradationMeister.Impl
             var ruleSet = GetRuleSetFor(targetCapability, true);
             if (ruleSet == null) throw new ArgumentNullException(nameof(ruleSet));
             ruleSet.Rules.Add(
-                new FailureRule()
+                new FailureRule
                 {
                     Failure = failure,
                     Value = monitoringResult,
@@ -248,6 +240,10 @@ namespace DegradationMeister.Impl
             ruleSet.Triggers.Add(function);
         }
 
+        /// <summary>
+        /// Returns the name of the degrader as string
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return _name;
@@ -263,6 +259,21 @@ namespace DegradationMeister.Impl
         {
             var sourceRuleSet = GetRuleSetFor(sourceCapability, true);
             sourceRuleSet.AddDependent(targetCapability);
+        }
+
+        /// <summary>
+        /// Just an assertion method to verify that the correct degrader is called for the
+        /// specific capability
+        /// </summary>
+        /// <param name="capability">Capabiliy that shall be verified</param>
+        [Conditional("DEBUG")]
+        private void CheckThatInDegrader(ICapability capability)
+        {
+            if (capability.Degrader != this)
+            {
+                throw new InvalidOperationException(
+                    $"Given capability {capability} does not match to Degrader {this}");
+            }
         }
     }   
 }

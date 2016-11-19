@@ -7,7 +7,7 @@ namespace DegradationMeister.Impl
         /// <summary>
         /// Gets or sets the degrader being invoked in case of an update
         /// </summary>
-        public IDegrader Degrader { get; set; }
+        private IDegrader Degrader { get; set; }
 
         public Monitor(IDegrader degrader)
         {

@@ -6,7 +6,7 @@
     public static class Capabilities
     {
         public const int Unknown = 0;
-        public const int Passed = 1;
+        public const int Full = 1;
         public const int Failed = 2;
         public const int Limited = 3;
 
@@ -17,7 +17,7 @@
                 case 0:
                     return nameof(Unknown);
                 case 1:
-                    return nameof(Passed);
+                    return nameof(Full);
                 case 2:
                     return nameof(Failed);
                 case 3:
