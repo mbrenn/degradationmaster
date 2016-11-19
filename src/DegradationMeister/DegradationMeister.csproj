@@ -51,7 +51,6 @@
     <Compile Include="IFailure.cs" />
     <Compile Include="ICapability.cs" />
     <Compile Include="IDegrader.cs" />
-    <Compile Include="IMonitor.cs" />
     <Compile Include="Impl\Capability.cs" />
     <Compile Include="Impl\CapabilityRuleSet.cs" />
     <Compile Include="Impl\Degrader.cs" />

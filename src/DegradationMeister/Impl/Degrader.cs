@@ -219,7 +219,7 @@ namespace DegradationMeister.Impl
             sourceCapability.Degrader.AddDependency(sourceCapability, targetCapability);
         }
 
-        public void AddRule(IFailure failure, MonitoringResult sourceValue, ICapability targetCapability, int targetValue)
+        public void AddRule(IFailure failure, MonitoringResult monitoringResult, ICapability targetCapability, int targetValue)
         {
             if (targetCapability.Degrader != null && targetCapability.Degrader != this)
             {
@@ -234,7 +234,7 @@ namespace DegradationMeister.Impl
                 new FailureRule()
                 {
                     Failure = failure,
-                    Value = sourceValue,
+                    Value = monitoringResult,
                     TargetCapability = targetValue
                 });
         }

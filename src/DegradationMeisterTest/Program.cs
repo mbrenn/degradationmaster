@@ -15,7 +15,7 @@ namespace DegradationMeisterTest
         private static ICapability _capabilitySystem;
 
         static void Main(string[] args)
-        {/*
+        {
             IDegrader degraderPowerSupply = new Degrader("Power Supply");
             IDegrader degraderActuator = new Degrader("Actuator");
 
@@ -87,7 +87,6 @@ namespace DegradationMeisterTest
             Console.WriteLine("Rehealing Power Supply Failure...");
             monitorPowerSupply.MakeOk();
             GiveStatus();
-            */
 
             // Creates complex Degrading and capability hierarchy
             var degrader = new Degrader("Test");

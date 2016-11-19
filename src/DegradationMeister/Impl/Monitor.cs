@@ -3,7 +3,7 @@ using System.IO;
 
 namespace DegradationMeister.Impl
 {
-    public class Monitor : IMonitor
+    public class Monitor
     {
         /// <summary>
         /// Gets or sets the degrader being invoked in case of an update
