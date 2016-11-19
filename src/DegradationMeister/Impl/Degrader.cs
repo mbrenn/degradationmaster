@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace DegradationMeister.Impl
@@ -149,7 +148,7 @@ namespace DegradationMeister.Impl
                 if (ruleAsCapability != null)
                 {
                     // Checks if the capability matches to the current value
-                    if (ruleAsCapability.Value == ruleAsCapability.Capability.CurrentValue)
+                    if (ruleAsCapability.Value == ruleAsCapability.Capability.CurrentDegradation)
                     {
                         ChangeCapabilityTo(ruleSet, rule.TargetCapability, alreadyUpdated);
                         return;
@@ -172,10 +171,10 @@ namespace DegradationMeister.Impl
             int targetCapability,
             HashSet<ICapability> alreadyUpdated)
         {
-            var current = ruleSet.Capability.CurrentValue;
+            var current = ruleSet.Capability.CurrentDegradation;
             if (current != targetCapability)
             {
-                ruleSet.Capability.CurrentValue = targetCapability;
+                ruleSet.Capability.CurrentDegradation = targetCapability;
 
                 foreach (var dependent in ruleSet.DependentCapabilities)
                 {

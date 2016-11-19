@@ -1,146 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DegradationMeister;
-using DegradationMeister.Impl;
+// ***********************************************************************
+// Copyright (c) 2015 Charlie Poole
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// ***********************************************************************
 
-namespace DegradationMeisterTest
-{   class Program
+using NUnitLite;
+
+namespace NUnitLite.Tests
+{
+    public class Program
     {
-        private static ICapability _capabilityPowerSupply;
-        private static ICapability _capabilityActuator;
-        private static ICapability _capabilitySystem;
-
-        static void Main(string[] args)
+        /// <summary>
+        /// The main program executes the tests. Output may be routed to
+        /// various locations, depending on the arguments passed.
+        /// </summary>
+        /// <remarks>Run with --help for a full list of arguments supported</remarks>
+        /// <param name="args"></param>
+        public static int Main(string[] args)
         {
-            IDegrader degraderPowerSupply = new Degrader("Power Supply");
-            IDegrader degraderActuator = new Degrader("Actuator");
-
-            var monitorPowerSupply = new PowerSupplyMonitor(degraderPowerSupply);
-            _capabilityPowerSupply = new Capability("Power Supply");
-
-            var monitorActuator = new ActuatorMonitor(degraderActuator);
-            _capabilityActuator = new Capability("Actuator");
-            _capabilitySystem = new Capability("System");
-
-            IDegrader degraderSystem = new Degrader("System");
-
-            degraderPowerSupply.AddRuleForUnknown(monitorPowerSupply.TotalFailure, _capabilityPowerSupply);
-            degraderPowerSupply.AddRuleForUnknown(monitorPowerSupply.LimitedCurrent, _capabilityPowerSupply);
-            degraderPowerSupply.AddRule(monitorPowerSupply.TotalFailure, MonitoringResult.NOK, _capabilityPowerSupply, Capabilities.Failed);
-            degraderPowerSupply.AddRule(monitorPowerSupply.LimitedCurrent, MonitoringResult.NOK, _capabilityPowerSupply, Capabilities.Limited);
-
-            degraderActuator.AddRuleForUnknown(monitorActuator.TotalFailure, _capabilityActuator) ;
-            degraderActuator.AddRule(monitorActuator.TotalFailure, MonitoringResult.NOK, _capabilityActuator, Capabilities.Failed);
-            degraderActuator.AddRule(_capabilityPowerSupply, Capabilities.Failed, _capabilityActuator, Capabilities.Failed);
-            degraderActuator.AddRule(_capabilityPowerSupply, Capabilities.Limited, _capabilityActuator, Capabilities.Limited);
-
-            degraderSystem.AddRule(_capabilityActuator, Capabilities.Failed, _capabilitySystem, Capabilities.Failed);
-            degraderSystem.AddRule(_capabilityActuator, Capabilities.Limited, _capabilitySystem, Capabilities.Limited);
-
-            degraderSystem.AddTrigger(_capabilitySystem, x => Console.WriteLine($"- System: {Capabilities.Convert(x.CurrentValue)}"));
-
-            GiveStatus();
-            Console.WriteLine("Pass Power Supply...");
-            monitorPowerSupply.MakeOk();
-            GiveStatus();
-            Console.WriteLine("Pass Power Actuator...");
-            monitorActuator.MakeOk();
-            GiveStatus();
-
-            Console.WriteLine("Injecting Power Supply Failure...");
-            monitorPowerSupply.InjectTotalFailure();
-            GiveStatus();
-
-            Console.WriteLine("Rehealing Power Supply Failure...");
-            monitorPowerSupply.MakeOk();
-            GiveStatus();
-
-            Console.WriteLine("Injecting Limited Power Supply Failure...");
-            monitorPowerSupply.InjectLimitedCurrentFailure();
-            GiveStatus();
-
-            Console.WriteLine("Rehealing Power Supply Failure...");
-            monitorPowerSupply.MakeOk();
-            GiveStatus();
-
-            Console.WriteLine("Injecting Actuator Failure...");
-            monitorActuator.InjectTotalFailure();
-            GiveStatus();
-
-            Console.WriteLine("Rehealing Actuator Failure...");
-            monitorActuator.MakeOk();
-            GiveStatus();
-
-            Console.WriteLine("Injecting Power Supply + Actuator Failure...");
-            monitorActuator.InjectTotalFailure();
-            monitorPowerSupply.InjectTotalFailure();
-            GiveStatus();
-
-            Console.WriteLine("Rehealing Actuator Failure...");
-            monitorActuator.MakeOk();
-            GiveStatus();
-
-            Console.WriteLine("Rehealing Power Supply Failure...");
-            monitorPowerSupply.MakeOk();
-            GiveStatus();
-
-            // Creates complex Degrading and capability hierarchy
-            var degrader = new Degrader("Test");
-            var capability = new Capability("Test");
-
-            var failure = CreateSup(degrader, capability, 0);
-
-            var watch = new Stopwatch();
-            watch.Start();
-            for (var m = 0; m < 1000; m++)
-            {
-                failure.InjectTotalFailure();
-                failure.MakeOk();
-            }
-
-            watch.Stop();
-
-            Console.WriteLine(watch.Elapsed.ToString());
-
-
-            //Console.ReadKey();
-        }
-
-        private static ActuatorMonitor CreateSup(Degrader degrader, Capability capability, int i)
-        {
-            ActuatorMonitor last = null;
-            for (var n = 0; n < 5; n++)
-            {
-
-                var subDegrader = new Degrader("Sub");
-                var subCapability = new Capability("Sub");
-
-                var failure = new ActuatorMonitor(subDegrader);
-                subDegrader.AddRuleForFailure(failure.TotalFailure, subCapability);
-
-                degrader.AddRuleForFailure(subCapability, capability);
-
-                if (i < 1000)
-                {
-                    return CreateSup(subDegrader, subCapability, i+1);
-                }
-
-                last = failure;
-            }
-
-            return last;
-        }
-
-        private static void GiveStatus()
-        {
-            Console.WriteLine(
-                $" - Power Supply: {Capabilities.Convert(_capabilityPowerSupply.CurrentValue)} - " +
-                $"Actuator: {Capabilities.Convert(_capabilityActuator.CurrentValue)} - " + 
-                $"System: {Capabilities.Convert(_capabilitySystem.CurrentValue)}");
+            return new AutoRun().Execute(args);
         }
     }
 }

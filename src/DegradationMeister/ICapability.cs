@@ -7,6 +7,9 @@
         /// </summary>
         IDegrader Degrader { get; set; }
 
-        int CurrentValue { get; set; }
+        /// <summary>
+        /// Gets or sets current Degradation of the capability
+        /// </summary>
+        int CurrentDegradation { get; set; }
     }
 }

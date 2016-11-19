@@ -11,7 +11,7 @@
 
         public IDegrader Degrader { get; set; }
 
-        public int CurrentValue { get; set; } = 0;
+        public int CurrentDegradation { get; set; } = 0;
 
         public override string ToString()
         {

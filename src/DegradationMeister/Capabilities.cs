@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DegradationMeister
+﻿namespace DegradationMeister
 {
-    public class Capabilities
+    /// <summary>
+    /// Defines the default values for certain degradations
+    /// </summary>
+    public static class Capabilities
     {
         public const int Unknown = 0;
         public const int Passed = 1;
