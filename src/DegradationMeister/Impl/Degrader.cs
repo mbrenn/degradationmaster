@@ -1,6 +1,6 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace DegradationMeister.Impl
@@ -10,6 +10,9 @@ namespace DegradationMeister.Impl
     /// </summary>
     public class Degrader : IDegrader
     {
+        /// <summary>
+        /// Stores the name of the degrader
+        /// </summary>
         private readonly string _name;
 
         /// <summary>
@@ -25,6 +28,16 @@ namespace DegradationMeister.Impl
             _name = name;
         }
 
+        private void CheckThatInDegrader(ICapability targetCapability)
+        {
+            if (targetCapability.Degrader != this)
+            {
+                throw new InvalidOperationException(
+                    $"Given capability {targetCapability} does not match to Degrader {this}");
+            }
+        }
+
+
         /// <summary>
         /// Gets the ruleset for a certain capability. If the ruleset does not exist before, 
         /// it will be created and a new instance will be returned. 
@@ -34,6 +47,8 @@ namespace DegradationMeister.Impl
         /// <returns>The found capability set</returns>
         private CapabilityRuleSet GetRuleSetFor(ICapability targetCapability, bool createIfNotExisting)
         {
+            CheckThatInDegrader(targetCapability); 
+
             var result = _rules.FirstOrDefault(x => x.Capability == targetCapability);
             if (result == null)
             {
@@ -93,16 +108,19 @@ namespace DegradationMeister.Impl
         /// Updates the degradation if requested by the failure
         /// </summary>
         /// <param name="capability">Capability which is updated</param>
+        /// <param name="alreadyUpdated">Hashset of capabilities that already have been updated in current update phase</param>
         public void UpdateDegradation(ICapability capability, HashSet<ICapability> alreadyUpdated)
         {
+            CheckThatInDegrader(capability);
+
             if (alreadyUpdated.Contains(capability))
             {
-                Console.WriteLine(" -- Already updated: " + capability);
+                //Console.WriteLine(" -- Already updated: " + capability);
                 return;
             }
 
             alreadyUpdated.Add(capability);
-            Console.WriteLine(" -- Updating for: " + capability);
+            //Console.WriteLine(" -- Updating for: " + capability);
 
             var ruleSet = GetRuleSetFor(capability, false);
             foreach (var rule in ruleSet.Rules)
@@ -149,7 +167,10 @@ namespace DegradationMeister.Impl
         /// <param name="ruleSet">Ruleset of the capability containing also the triggers</param>
         /// <param name="targetCapability">The target capability value</param>
         /// <param name="alreadyUpdated">The capabilities that already have been updated</param>
-        private static void ChangeCapabilityTo(CapabilityRuleSet ruleSet, int targetCapability, HashSet<ICapability> alreadyUpdated )
+        private static void ChangeCapabilityTo(
+            CapabilityRuleSet ruleSet, 
+            int targetCapability,
+            HashSet<ICapability> alreadyUpdated)
         {
             var current = ruleSet.Capability.CurrentValue;
             if (current != targetCapability)
@@ -168,8 +189,20 @@ namespace DegradationMeister.Impl
             }
         }
 
+        /// <summary>
+        /// Adds a rule that the given target capability will get modified when the source capability is modified
+        /// </summary>
+        /// <param name="sourceCapability">Capability of the cause changing the given capability</param>
+        /// <param name="sourceValue">The value, that will be assumed when regarding a change</param>
+        /// <param name="targetCapability">Capability that will be changed</param>
+        /// <param name="targetValue">To the given value</param>
         public void AddRule(ICapability sourceCapability, int sourceValue, ICapability targetCapability, int targetValue)
         {
+            if (targetCapability.Degrader != null && targetCapability.Degrader != this)
+            {
+                throw new InvalidOperationException("Target Capability is already assigned to another degrader");
+            }
+
             targetCapability.Degrader = this;
 
             var ruleSet = GetRuleSetFor(targetCapability, true);
@@ -182,12 +215,17 @@ namespace DegradationMeister.Impl
                     TargetCapability = targetValue
                 });
 
-            var sourceRuleSet = GetRuleSetFor(sourceCapability, true);
-            sourceRuleSet.AddDependent(targetCapability);
+            
+            sourceCapability.Degrader.AddDependency(sourceCapability, targetCapability);
         }
 
         public void AddRule(IFailure failure, MonitoringResult sourceValue, ICapability targetCapability, int targetValue)
         {
+            if (targetCapability.Degrader != null && targetCapability.Degrader != this)
+            {
+                throw new InvalidOperationException("Target Capability is already assigned to another degrader");
+            }
+
             targetCapability.Degrader = this;
 
             var ruleSet = GetRuleSetFor(targetCapability, true);
@@ -203,6 +241,8 @@ namespace DegradationMeister.Impl
 
         public void AddTrigger(ICapability capability, Action<ICapability> function)
         {
+            CheckThatInDegrader(capability);
+
             var ruleSet = GetRuleSetFor(capability, true);
             if (ruleSet == null) throw new ArgumentNullException(nameof(ruleSet));
 
@@ -212,6 +252,18 @@ namespace DegradationMeister.Impl
         public override string ToString()
         {
             return _name;
+        }
+
+        /// <summary>
+        /// Adds a dependency of two capabilities. 
+        /// Whenever the source capability has a new degradation, the target capability needs to be updated
+        /// </summary>
+        /// <param name="sourceCapability">Capability which will be changed</param>
+        /// <param name="targetCapability">Capability that is updated in case of an update of the source capability</param>
+        public void AddDependency(ICapability sourceCapability, ICapability targetCapability)
+        {
+            var sourceRuleSet = GetRuleSetFor(sourceCapability, true);
+            sourceRuleSet.AddDependent(targetCapability);
         }
     }   
 }

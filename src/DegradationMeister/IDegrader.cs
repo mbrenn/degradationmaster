@@ -22,5 +22,6 @@ namespace DegradationMeister
         void AddRule(IFailure sourceMonitor, MonitoringResult sourceValue, ICapability targetCapability, int targetValue);
 
         void AddTrigger(ICapability capability, Action<ICapability> function);
+        void AddDependency(ICapability sourceCapability, ICapability targetCapability);
     }
 }

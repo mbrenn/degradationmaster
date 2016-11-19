@@ -1,4 +1,6 @@
-﻿namespace DegradationMeister
+﻿using DegradationMeister.Impl;
+
+namespace DegradationMeister
 {
     public static class Extensions
     {

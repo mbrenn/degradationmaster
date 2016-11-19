@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace DegradationMeisterTest
         private static ICapability _capabilitySystem;
 
         static void Main(string[] args)
-        {
+        {/*
             IDegrader degraderPowerSupply = new Degrader("Power Supply");
             IDegrader degraderActuator = new Degrader("Actuator");
 
@@ -86,8 +87,53 @@ namespace DegradationMeisterTest
             Console.WriteLine("Rehealing Power Supply Failure...");
             monitorPowerSupply.MakeOk();
             GiveStatus();
+            */
 
-            Console.ReadKey();
+            // Creates complex Degrading and capability hierarchy
+            var degrader = new Degrader("Test");
+            var capability = new Capability("Test");
+
+            var failure = CreateSup(degrader, capability, 0);
+
+            var watch = new Stopwatch();
+            watch.Start();
+            for (var m = 0; m < 1000; m++)
+            {
+                failure.InjectTotalFailure();
+                failure.MakeOk();
+            }
+
+            watch.Stop();
+
+            Console.WriteLine(watch.Elapsed.ToString());
+
+
+            //Console.ReadKey();
+        }
+
+        private static ActuatorMonitor CreateSup(Degrader degrader, Capability capability, int i)
+        {
+            ActuatorMonitor last = null;
+            for (var n = 0; n < 5; n++)
+            {
+
+                var subDegrader = new Degrader("Sub");
+                var subCapability = new Capability("Sub");
+
+                var failure = new ActuatorMonitor(subDegrader);
+                subDegrader.AddRuleForFailure(failure.TotalFailure, subCapability);
+
+                degrader.AddRuleForFailure(subCapability, capability);
+
+                if (i < 1000)
+                {
+                    return CreateSup(subDegrader, subCapability, i+1);
+                }
+
+                last = failure;
+            }
+
+            return last;
         }
 
         private static void GiveStatus()
