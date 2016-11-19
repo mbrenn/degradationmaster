@@ -95,6 +95,38 @@ namespace DegradationMeisterTest
             Console.WriteLine("Rehealing Power Supply Failure...");
             monitorPowerSupply.MakeOk();
             GiveStatus();
+
+            Assert.That(_capabilitySystem.Current, Is.EqualTo(Capabilities.Full));
+        }
+        [Test]
+        public void TestSingleDegrader()
+        {
+            var degrader = new Degrader("All");
+            var monitorPowerSupply = new PowerSupplyMonitor(degrader);
+            _capabilityPowerSupply = new Capability(degrader, "Power Supply");
+            
+            var monitorActuator = new ActuatorMonitor(degrader);
+            _capabilityActuator = new Capability(degrader, "Actuator");
+            
+            _capabilitySystem = new Capability(degrader, "System");
+
+            degrader.AddDefaultRules(monitorPowerSupply.TotalFailure, _capabilityPowerSupply);
+            degrader.AddDefaultRules(monitorActuator.TotalFailure, _capabilityActuator);
+            degrader.AddDefaultRules(_capabilityPowerSupply, _capabilityActuator);
+            degrader.AddDefaultRules(_capabilityActuator, _capabilitySystem);
+
+            degrader.AddTrigger(_capabilitySystem,
+                x => Console.WriteLine($"- System: {Capabilities.Convert(x.Current)}"));
+
+            GiveStatus();
+            Console.WriteLine("Pass Power Supply...");
+            monitorPowerSupply.MakeOk();
+            GiveStatus();
+            Console.WriteLine("Pass Power Actuator...");
+            monitorActuator.MakeOk();
+            GiveStatus();
+
+            Assert.That(_capabilitySystem.Current, Is.EqualTo(Capabilities.Full));
         }
 
         [Test]
